@@ -114,7 +114,7 @@ export default function LoginPage() {
                 </p>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-2 mb-4">
                 <Label htmlFor="password">Password</Label>
                 <Input
                   id="password"
@@ -127,7 +127,7 @@ export default function LoginPage() {
               </div>
             </CardContent>
 
-            <CardFooter className="flex flex-col space-y-4">
+            <CardFooter className="flex flex-col space-y-4 pt-2">
               <Button
                 type="submit"
                 className="w-full"

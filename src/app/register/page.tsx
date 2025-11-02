@@ -140,7 +140,7 @@ export default function RegisterPage() {
                 </p>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-2 mb-4">
                 <Label htmlFor="confirmPassword">Confirm Password</Label>
                 <Input
                   id="confirmPassword"
@@ -153,7 +153,7 @@ export default function RegisterPage() {
               </div>
             </CardContent>
 
-            <CardFooter className="flex flex-col space-y-4">
+            <CardFooter className="flex flex-col space-y-4 mt-2">
               <Button
                 type="submit"
                 className="w-full"

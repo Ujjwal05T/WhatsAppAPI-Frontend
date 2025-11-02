@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Copy, Check, User, Key, Calendar, Shield, Activity, Plus, Phone, QrCode, RefreshCw } from 'lucide-react';
+import { Check, Shield, Plus, Phone, QrCode, RefreshCw } from 'lucide-react';
 
 interface ProfileData {
   user: {
@@ -40,7 +40,6 @@ export default function AccountsPage() {
   const [isCreatingAccount, setIsCreatingAccount] = useState(false);
   const [error, setError] = useState<string>('');
   const [apiKey, setApiKey] = useState<string>('');
-  const [isCopied, setIsCopied] = useState(false);
 
   useEffect(() => {
     fetchUserData();
@@ -157,18 +156,6 @@ export default function AccountsPage() {
     }
   };
 
-  const copyToClipboard = async () => {
-    if (apiKey) {
-      try {
-        await navigator.clipboard.writeText(apiKey);
-        setIsCopied(true);
-        setTimeout(() => setIsCopied(false), 2000);
-      } catch (err) {
-        console.error('Failed to copy:', err);
-      }
-    }
-  };
-
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString('en-US', {
       year: 'numeric',
@@ -191,7 +178,7 @@ export default function AccountsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="flex items-center justify-center min-h-96">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading your accounts...</p>
@@ -202,7 +189,7 @@ export default function AccountsPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="flex items-center justify-center min-h-96">
         <Card className="w-96">
           <CardHeader className="text-center">
             <div className="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
@@ -232,79 +219,12 @@ export default function AccountsPage() {
     : 0;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Simple Navigation */}
-      <nav className="border-b bg-white">
-        <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-6">
-              <h1 className="text-xl font-bold">WhatsApp API</h1>
-              <Button variant="ghost" size="sm">
-                <Phone className="h-4 w-4 mr-2" />
-                My Accounts
-              </Button>
-              <Button variant="ghost" size="sm" onClick={() => window.location.href = '/profile'}>
-                <Key className="h-4 w-4 mr-2" />
-                Profile
-              </Button>
-            </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm">{user?.mobile}</span>
-              <Badge variant="secondary" className="text-xs">
-                {user?.isActive ? 'Active' : 'Inactive'}
-              </Badge>
-              <Button variant="outline" size="sm" onClick={handleLogout}>
-                Logout
-              </Button>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">WhatsApp Accounts</h1>
-          <p className="text-gray-600 mt-2">Manage your WhatsApp connections</p>
-        </div>
-
-        {/* User Info Card */}
-        <Card className="mb-6">
-          <CardHeader>
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                <User className="h-6 w-6 text-green-600" />
-              </div>
-              <div>
-                <CardTitle className="text-xl">{user?.mobile}</CardTitle>
-                <CardDescription>Account Information</CardDescription>
-              </div>
-              <Badge variant={user?.isActive ? "default" : "secondary"}>
-                {user?.isActive ? "Active" : "Inactive"}
-              </Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="flex items-center space-x-3">
-                <Calendar className="h-4 w-4 text-gray-500" />
-                <div>
-                  <p className="text-sm text-gray-500">Member Since</p>
-                  <p className="font-medium">{formatDate(user?.createdAt || '')}</p>
-                </div>
-              </div>
-              {user?.lastLogin && (
-                <div className="flex items-center space-x-3">
-                  <Activity className="h-4 w-4 text-gray-500" />
-                  <div>
-                    <p className="text-sm text-gray-500">Last Login</p>
-                    <p className="font-medium">{formatDate(user.lastLogin)}</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+    <>
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">WhatsApp Accounts</h1>
+        <p className="text-gray-600 mt-2">Manage your WhatsApp connections</p>
+      </div>
 
         {/* Create Account Button */}
         <div className="mb-6 flex justify-end">
@@ -443,7 +363,6 @@ export default function AccountsPage() {
             )}
           </CardContent>
         </Card>
-      </div>
-    </div>
+    </>
   );
 }

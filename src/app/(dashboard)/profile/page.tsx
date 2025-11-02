@@ -111,7 +111,7 @@ export default function ProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="flex items-center justify-center min-h-96">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading profile...</p>
@@ -122,7 +122,7 @@ export default function ProfilePage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="flex items-center justify-center min-h-96">
         <Card className="w-96">
           <CardHeader className="text-center">
             <div className="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
@@ -160,15 +160,14 @@ export default function ProfilePage() {
     : 0;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Your Profile</h1>
-          <p className="text-gray-600 mt-2">
-            Manage your account and view your API key
-          </p>
-        </div>
+    <>
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">Your Profile</h1>
+        <p className="text-gray-600 mt-2">
+          Manage your account and view your API key
+        </p>
+      </div>
 
         {/* User Info Card */}
         <Card className="mb-6">
@@ -342,7 +341,6 @@ export default function ProfilePage() {
             </Button>
           </CardContent>
         </Card>
-      </div>
-    </div>
+    </>
   );
 }
