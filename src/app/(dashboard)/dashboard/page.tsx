@@ -23,7 +23,20 @@ export default function DashboardPage() {
 
   const fetchUserData = async () => {
     try {
+      const apiKey = localStorage.getItem('apiKey') || localStorage.getItem('authToken');
+
+      console.log('Dashboard: Fetching user data...');
+      console.log('Dashboard: API Key exists:', !!apiKey);
+
+      if (!apiKey) {
+        console.error('Dashboard: No API key found');
+        toast.error('Please login first');
+        window.location.href = '/login';
+        return;
+      }
+
       const userData = await authAPI.getCurrentUser();
+      console.log('Dashboard: User data received:', userData);
       setUser(userData);
 
       // Fetch user accounts
@@ -35,8 +48,19 @@ export default function DashboardPage() {
       setAccounts(allAccounts);
       setConnectedAccounts(connected);
     } catch (err: any) {
-      console.error('Failed to fetch data:', err);
-      toast.error(err.message || 'Failed to load dashboard data');
+      console.error('Dashboard: Failed to fetch data:', err);
+      console.error('Dashboard: Error response:', err.response?.data);
+      console.error('Dashboard: Error status:', err.response?.status);
+
+      // Only redirect to login for auth errors
+      if (err.response?.status === 401 || err.message?.includes('No API key')) {
+        toast.error('Session expired. Please login again');
+        localStorage.removeItem('apiKey');
+        localStorage.removeItem('authToken');
+        window.location.href = '/login';
+      } else {
+        toast.error(err.message || 'Failed to load dashboard data');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -55,7 +79,7 @@ export default function DashboardPage() {
       {/* Welcome Section */}
       <div className="mb-8">
         <h1>
-          Welcome back, {user?.mobile || 'User'}!
+          Welcome back, {user?.name || 'User'}!
         </h1>
         <p className="text-gray-600 mt-2">
           Manage your WhatsApp connections and monitor your API usage

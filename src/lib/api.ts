@@ -22,9 +22,10 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Don't auto-redirect on 401 - let pages handle it
+    // Just log the error for debugging
     if (error.response?.status === 401) {
-      localStorage.removeItem('authToken');
-      window.location.href = '/login';
+      console.warn('API: 401 Unauthorized -', error.config?.url);
     }
     return Promise.reject(error);
   }
@@ -33,8 +34,10 @@ api.interceptors.response.use(
 // Types
 export interface User {
   id: number;
+  name: string;
   mobile: string;
   apiKey: string;
+  role: string;
   createdAt: string;
   lastLogin?: string;
   isActive: boolean;
@@ -62,8 +65,9 @@ export interface WhatsAppAccountResponse {
 
 // Auth APIs
 export const authAPI = {
-  register: async (mobile: string, password: string) => {
+  register: async (name: string, mobile: string, password: string) => {
     const response = await api.post<any>('/api/auth/register', {
+      name,
       mobile,
       password,
     });
@@ -92,8 +96,31 @@ export const authAPI = {
   },
 
   getCurrentUser: async () => {
-    const response = await api.get<User>('/api/auth/me');
-    return response.data;
+    const apiKey = localStorage.getItem('apiKey') || localStorage.getItem('authToken');
+
+    console.log('getCurrentUser: Checking for API key...');
+    console.log('getCurrentUser: apiKey from localStorage:', apiKey ? 'Found' : 'Not found');
+
+    if (!apiKey) {
+      console.error('getCurrentUser: No API key found in localStorage');
+      throw new Error('No API key found');
+    }
+
+    try {
+      console.log('getCurrentUser: Making API call to /api/auth/profile');
+      const response = await api.get<any>('/api/auth/profile', {
+        headers: {
+          'X-API-Key': apiKey
+        }
+      });
+      console.log('getCurrentUser: Response received:', response.data);
+      return response.data.user;
+    } catch (error: any) {
+      console.error('getCurrentUser: API call failed:', error);
+      console.error('getCurrentUser: Error response:', error.response?.data);
+      console.error('getCurrentUser: Error status:', error.response?.status);
+      throw error;
+    }
   },
 };
 
@@ -117,12 +144,22 @@ export const whatsappAPI = {
   },
 
   getUserAccounts: async (userId: number) => {
-    const response = await api.get<WhatsAppAccount[]>(`/api/whatsapp/accounts/${userId}`);
+    const apiKey = localStorage.getItem('apiKey') || localStorage.getItem('authToken');
+    const response = await api.get<WhatsAppAccount[]>(`/api/whatsapp/accounts/${userId}`, {
+      headers: {
+        'X-API-Key': apiKey || ''
+      }
+    });
     return response.data;
   },
 
   getConnectedAccounts: async (userId: number) => {
-    const response = await api.get<WhatsAppAccount[]>(`/api/whatsapp/connected/${userId}`);
+    const apiKey = localStorage.getItem('apiKey') || localStorage.getItem('authToken');
+    const response = await api.get<WhatsAppAccount[]>(`/api/whatsapp/connected/${userId}`, {
+      headers: {
+        'X-API-Key': apiKey || ''
+      }
+    });
     return response.data;
   },
 };

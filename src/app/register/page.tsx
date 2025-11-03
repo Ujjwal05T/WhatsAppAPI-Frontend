@@ -13,6 +13,7 @@ import { authAPI } from '@/lib/api';
 import { toast } from 'sonner';
 
 export default function RegisterPage() {
+  const [name, setName] = useState('');
   const [mobile, setMobile] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -21,8 +22,13 @@ export default function RegisterPage() {
   const router = useRouter();
 
   const validateForm = () => {
-    if (!mobile || !password || !confirmPassword) {
+    if (!name || !mobile || !password || !confirmPassword) {
       setError('All fields are required');
+      return false;
+    }
+
+    if (name.trim().length < 2) {
+      setError('Name must be at least 2 characters long');
       return false;
     }
 
@@ -55,7 +61,7 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      const response = await authAPI.register(mobile, password);
+      const response = await authAPI.register(name, mobile, password);
 
       // Store the API key for profile access
       localStorage.setItem('apiKey', response.user.apiKey);
@@ -108,6 +114,22 @@ export default function RegisterPage() {
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}
+
+              <div className="space-y-2">
+                <Label htmlFor="name">Full Name</Label>
+                <Input
+                  id="name"
+                  type="text"
+                  placeholder="John Doe"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                  disabled={isLoading}
+                />
+                <p className="text-xs text-gray-500">
+                  Enter your full name
+                </p>
+              </div>
 
               <div className="space-y-2">
                 <Label htmlFor="mobile">Mobile Number</Label>

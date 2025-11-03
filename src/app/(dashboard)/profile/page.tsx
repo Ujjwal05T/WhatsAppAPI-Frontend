@@ -6,12 +6,15 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Copy, Check, User, Key, Calendar, Shield, Activity } from 'lucide-react';
 import { authAPI } from '@/lib/api';
+import { ProfileSkeleton } from '@/components/skeletons/dashboard-skeleton';
 
 interface ProfileData {
   user: {
     id: number;
+    name: string;
     mobile: string;
     apiKey: string;
+    role: string;
     createdAt: string;
     lastLogin?: string;
     isActive: boolean;
@@ -110,14 +113,7 @@ export default function ProfilePage() {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-96">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading profile...</p>
-        </div>
-      </div>
-    );
+    return <ProfileSkeleton />;
   }
 
   if (error) {
@@ -172,17 +168,24 @@ export default function ProfilePage() {
         {/* User Info Card */}
         <Card className="mb-6">
           <CardHeader>
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                <User className="h-6 w-6 text-green-600" />
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                  <User className="h-6 w-6 text-green-600" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl">{profileData.user.name}</CardTitle>
+                  <CardDescription>{profileData.user.mobile}</CardDescription>
+                </div>
               </div>
-              <div>
-                <CardTitle className="text-xl">{profileData.user.mobile}</CardTitle>
-                <CardDescription>Account Information</CardDescription>
+              <div className="flex gap-2">
+                <Badge variant={profileData.user.role === 'ADMIN' ? "destructive" : "secondary"}>
+                  {profileData.user.role}
+                </Badge>
+                <Badge variant={profileData.user.isActive ? "default" : "secondary"}>
+                  {profileData.user.isActive ? "Active" : "Inactive"}
+                </Badge>
               </div>
-              <Badge variant={profileData.user.isActive ? "default" : "secondary"}>
-                {profileData.user.isActive ? "Active" : "Inactive"}
-              </Badge>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">

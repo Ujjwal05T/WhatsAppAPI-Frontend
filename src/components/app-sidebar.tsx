@@ -34,28 +34,28 @@ const menuItems = [
     title: 'Dashboard',
     url: '/dashboard',
     icon: Home,
-    shortcut: '⌘D',
+    shortcut: 'Ctrl + D',
     key: 'd',
   },
   {
     title: 'Accounts',
     url: '/accounts',
     icon: Phone,
-    shortcut: '⌘A',
+    shortcut: 'Ctrl + A',
     key: 'a',
   },
   {
     title: 'Profile',
     url: '/profile',
     icon: User,
-    shortcut: '⌘P',
+    shortcut: 'Ctrl + P',
     key: 'p',
   },
   {
     title: 'Docs',
     url: '/docs',
     icon: BookOpen,
-    shortcut: '⌘I',
+    shortcut: 'Ctrl + I',
     key: 'i',
     badge: 'Soon',
   },
@@ -168,9 +168,6 @@ export function AppSidebar() {
                       </TooltipTrigger>
                       <TooltipContent side="right" className="flex items-center gap-2">
                         <span>{item.title}</span>
-                        <kbd className="ml-auto inline-flex h-5 items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium">
-                          {item.shortcut}
-                        </kbd>
                       </TooltipContent>
                     </Tooltip>
                   </SidebarMenuItem>
@@ -199,7 +196,7 @@ export function AppSidebar() {
                   <div className="flex items-center justify-between border-t pt-1 mt-1">
                     <span>Toggle Help</span>
                     <kbd className="inline-flex h-5 items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px]">
-                      ⌘K
+                      Ctrl +K
                     </kbd>
                   </div>
                 </div>
@@ -243,7 +240,7 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </TooltipTrigger>
                 <TooltipContent side="right">
-                  Toggle keyboard shortcuts (⌘K)
+                  Toggle keyboard shortcuts (Ctrl + K)
                 </TooltipContent>
               </Tooltip>
             </SidebarMenuItem>
