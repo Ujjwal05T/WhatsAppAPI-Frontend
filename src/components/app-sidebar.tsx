@@ -1,6 +1,6 @@
 'use client';
 
-import { Home, Phone, User, BookOpen, LogOut, Key, Keyboard, Command } from 'lucide-react';
+import { Home, Phone, User, BookOpen, LogOut, Key, Keyboard, Webhook } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -22,6 +22,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import Image from 'next/image';
 
 interface User {
   mobile: string;
@@ -45,6 +46,13 @@ const menuItems = [
     key: 'a',
   },
   {
+    title: 'Webhooks',
+    url: '/webhooks',
+    icon: Webhook,
+    shortcut: 'Ctrl + W',
+    key: 'w',
+  },
+  {
     title: 'Profile',
     url: '/profile',
     icon: User,
@@ -57,7 +65,6 @@ const menuItems = [
     icon: BookOpen,
     shortcut: 'Ctrl + I',
     key: 'i',
-    badge: 'Soon',
   },
 ];
 
@@ -123,8 +130,9 @@ export function AppSidebar() {
           <div className="flex items-center space-x-3 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:space-x-0">
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="bg-gradient-to-br from-green-400 to-green-600 p-2.5 rounded-lg smooth-transition shadow-sm">
-                  <Phone className="h-5 w-5 text-white" />
+                <div className=""
+                >
+                  <Image src={'/logo.png'} alt="Logo" width={64} height={64} />
                 </div>
               </TooltipTrigger>
               <TooltipContent side="right" className="font-semibold">
@@ -209,7 +217,7 @@ export function AppSidebar() {
           {user && (
             <div className="mb-3 px-2 group-data-[collapsible=icon]:hidden">
               <div className="flex items-center space-x-3 mb-2 p-2 rounded-lg bg-sidebar-accent/30 smooth-transition">
-                <div className="bg-gradient-to-br from-blue-400 to-blue-600 p-2 rounded-full shadow-sm">
+                <div className="bg-linear-to-br from-blue-400 to-blue-600 p-2 rounded-full shadow-sm">
                   <User className="h-4 w-4 text-white" />
                 </div>
                 <div className="flex-1 min-w-0">
