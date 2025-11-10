@@ -163,11 +163,7 @@ export function AppSidebar() {
                           <a href={item.url}>
                             <item.icon />
                             <span>{item.title}</span>
-                            {item.badge && (
-                              <Badge variant="secondary" className="ml-auto text-xs">
-                                {item.badge}
-                              </Badge>
-                            )}
+                           
                             <kbd className="ml-auto hidden group-data-[collapsible=offcanvas]:inline-flex h-5 items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium">
                               {item.shortcut}
                             </kbd>
