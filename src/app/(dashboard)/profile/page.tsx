@@ -8,6 +8,8 @@ import { Copy, Check, User, Key, Calendar, Shield, Activity } from 'lucide-react
 import { authAPI } from '@/lib/api';
 import { ProfileSkeleton } from '@/components/skeletons/dashboard-skeleton';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
 interface ProfileData {
   user: {
     id: number;
@@ -262,7 +264,7 @@ export default function ProfilePage() {
             <div className="bg-gray-50 rounded-lg p-4">
               <h4 className="font-medium text-gray-800 mb-2">Example usage:</h4>
               <pre className="text-xs bg-gray-900 text-green-400 p-3 rounded overflow-x-auto">
-{`curl -X GET http://localhost:5000/api/auth/profile \\
+{`curl -X GET ${API_BASE_URL}/api/auth/profile \\
   -H "X-API-Key: ${profileData.user.apiKey}" \\
   -H "Content-Type: application/json"`}
               </pre>

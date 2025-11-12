@@ -24,6 +24,8 @@ import {
 } from '@/components/ui/tooltip';
 import Image from 'next/image';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
 interface User {
   mobile: string;
   apiKey: string;
@@ -79,7 +81,7 @@ export function AppSidebar() {
     const apiKey = localStorage.getItem('apiKey');
     if (apiKey) {
       // Fetch user profile
-      fetch('http://localhost:5000/api/auth/profile', {
+      fetch(`${API_BASE_URL}/api/auth/profile`, {
         headers: {
           'X-API-Key': apiKey,
         },

@@ -14,6 +14,8 @@ import { Progress } from '@/components/ui/progress';
 import { QrCode, RefreshCw, CheckCircle, Smartphone, Clock, Copy } from 'lucide-react';
 import { toast } from 'sonner';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
 interface QRConnectionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -75,7 +77,7 @@ export function QRConnectionDialog({
       const apiKey = localStorage.getItem('apiKey');
       if (!apiKey) return;
 
-      const response = await fetch(`http://localhost:5000/api/whatsapp/qr/${accountToken}`, {
+      const response = await fetch(`${API_BASE_URL}/api/whatsapp/qr/${accountToken}`, {
         headers: {
           'X-API-Key': apiKey,
         },
@@ -105,7 +107,7 @@ export function QRConnectionDialog({
       const apiKey = localStorage.getItem('apiKey');
       if (!apiKey) return;
 
-      const response = await fetch(`http://localhost:5000/api/whatsapp/status/${accountToken}`, {
+      const response = await fetch(`${API_BASE_URL}/api/whatsapp/status/${accountToken}`, {
         headers: {
           'X-API-Key': apiKey,
         },

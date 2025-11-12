@@ -14,6 +14,8 @@ import { Webhook, Plus, CheckCircle, XCircle, Settings, Send, Copy, Trash2, Eye,
 import { toast } from 'sonner';
 import { authAPI, whatsappAPI } from '@/lib/api';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
 interface WebhookData {
   id: number;
   url: string;
@@ -78,7 +80,7 @@ export default function WebhooksPage() {
 
   const fetchWebhooks = async (accountToken: string, apiKey: string) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/webhooks/${accountToken}`, {
+      const response = await fetch(`${API_BASE_URL}/api/webhooks/${accountToken}`, {
         headers: { 'X-API-Key': apiKey || '' }
       });
 
@@ -108,7 +110,7 @@ export default function WebhooksPage() {
     setIsRegistering(true);
     try {
       const apiKey = localStorage.getItem('apiKey');
-      const response = await fetch('http://localhost:5000/api/webhooks/register', {
+      const response = await fetch(`${API_BASE_URL}/api/webhooks/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -143,7 +145,7 @@ export default function WebhooksPage() {
   const toggleWebhook = async (webhookId: number, isActive: boolean) => {
     try {
       const apiKey = localStorage.getItem('apiKey');
-      const response = await fetch(`http://localhost:5000/api/webhooks/${webhookId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/webhooks/${webhookId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -166,7 +168,7 @@ export default function WebhooksPage() {
 
     try {
       const apiKey = localStorage.getItem('apiKey');
-      const response = await fetch(`http://localhost:5000/api/webhooks/${webhookId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/webhooks/${webhookId}`, {
         method: 'DELETE',
         headers: { 'X-API-Key': apiKey || '' }
       });
@@ -183,7 +185,7 @@ export default function WebhooksPage() {
   const testWebhook = async (webhookId: number) => {
     try {
       const apiKey = localStorage.getItem('apiKey');
-      const response = await fetch(`http://localhost:5000/api/webhooks/${webhookId}/test`, {
+      const response = await fetch(`${API_BASE_URL}/api/webhooks/${webhookId}/test`, {
         method: 'POST',
         headers: { 'X-API-Key': apiKey || '' }
       });

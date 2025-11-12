@@ -6,6 +6,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MessageSquare, Image, Copy, Check } from 'lucide-react';
 import { useState } from 'react';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
 export default function DocsPage() {
   const [copiedText, setCopiedText] = useState<string | null>(null);
 
@@ -163,7 +165,7 @@ export default function DocsPage() {
                   <CodeBlock
                     id="send-message-curl"
                     language="bash"
-                    code={`curl -X POST http://localhost:5000/api/send-message \\
+                    code={`curl -X POST ${API_BASE_URL}/api/send-message \\
   -H "X-API-Key: your_api_key" \\
   -H "Authorization: Bearer your_account_token" \\
   -H "Content-Type: application/json" \\
@@ -177,7 +179,7 @@ export default function DocsPage() {
                   <CodeBlock
                     id="send-message-js"
                     language="javascript"
-                    code={`const response = await fetch('http://localhost:5000/api/send-message', {
+                    code={`const response = await fetch('${API_BASE_URL}/api/send-message', {
   method: 'POST',
   headers: {
     'X-API-Key': 'your_api_key',
@@ -320,7 +322,7 @@ console.log(result);`}
                   <CodeBlock
                     id="send-media-curl"
                     language="bash"
-                    code={`curl -X POST http://localhost:5000/api/send-media \\
+                    code={`curl -X POST ${API_BASE_URL}/api/send-media \\
   -H "X-API-Key: your_api_key" \\
   -H "Authorization: Bearer your_account_token" \\
   -F "to=919876543210" \\
@@ -343,7 +345,7 @@ formData.append('file', file);
 formData.append('caption', 'Check out this image!');
 
 // Send request
-const response = await fetch('http://localhost:5000/api/send-media', {
+const response = await fetch('${API_BASE_URL}/api/send-media', {
   method: 'POST',
   headers: {
     'X-API-Key': 'your_api_key',

@@ -11,6 +11,8 @@ import { QrCode, RefreshCw, CheckCircle, XCircle, ArrowLeft, Smartphone, Clock }
 import { toast } from 'sonner';
 import { ConnectSkeleton } from '@/components/skeletons/dashboard-skeleton';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
 export default function ConnectPage() {
   const params = useParams();
   const router = useRouter();
@@ -76,7 +78,7 @@ export default function ConnectPage() {
         return;
       }
 
-      const response = await fetch(`http://localhost:5000/api/whatsapp/qr/${accountToken}`, {
+      const response = await fetch(`${API_BASE_URL}/api/whatsapp/qr/${accountToken}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -116,7 +118,7 @@ export default function ConnectPage() {
       const apiKey = localStorage.getItem('apiKey');
       if (!apiKey) return;
 
-      const response = await fetch(`http://localhost:5000/api/whatsapp/status/${accountToken}`, {
+      const response = await fetch(`${API_BASE_URL}/api/whatsapp/status/${accountToken}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
