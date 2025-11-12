@@ -145,22 +145,22 @@ export const whatsappAPI = {
 
   getUserAccounts: async (userId: number) => {
     const apiKey = localStorage.getItem('apiKey') || localStorage.getItem('authToken');
-    const response = await api.get<WhatsAppAccount[]>(`/api/whatsapp/accounts/${userId}`, {
+    const response = await api.get<{ success: boolean; accounts: WhatsAppAccount[] }>(`/api/whatsapp/accounts/${userId}`, {
       headers: {
         'X-API-Key': apiKey || ''
       }
     });
-    return response.data;
+    return response.data.accounts;
   },
 
   getConnectedAccounts: async (userId: number) => {
     const apiKey = localStorage.getItem('apiKey') || localStorage.getItem('authToken');
-    const response = await api.get<WhatsAppAccount[]>(`/api/whatsapp/connected/${userId}`, {
+    const response = await api.get<{ success: boolean; accounts: WhatsAppAccount[] }>(`/api/whatsapp/connected/${userId}`, {
       headers: {
         'X-API-Key': apiKey || ''
       }
     });
-    return response.data;
+    return response.data.accounts;
   },
 };
 

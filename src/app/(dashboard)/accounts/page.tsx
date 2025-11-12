@@ -92,10 +92,10 @@ export default function AccountsPage() {
       ]);
 
       if (accountsResponse.ok && connectedResponse.ok) {
-        const allAccounts: WhatsAppAccount[] = await accountsResponse.json();
-        const connected: WhatsAppAccount[] = await connectedResponse.json();
-        setAccounts(allAccounts);
-        setConnectedAccounts(connected);
+        const allAccountsData: { success: boolean; accounts: WhatsAppAccount[] } = await accountsResponse.json();
+        const connectedData: { success: boolean; accounts: WhatsAppAccount[] } = await connectedResponse.json();
+        setAccounts(allAccountsData.accounts || []);
+        setConnectedAccounts(connectedData.accounts || []);
       } else {
         console.warn('Failed to fetch some account data');
       }
