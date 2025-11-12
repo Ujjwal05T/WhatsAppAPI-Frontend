@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Check, Shield, Plus, Phone, QrCode, RefreshCw } from 'lucide-react';
 import { AccountsSkeleton } from '@/components/skeletons/dashboard-skeleton';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
 interface ProfileData {
   user: {
     id: number;
@@ -58,7 +60,7 @@ export default function AccountsPage() {
       setApiKey(storedApiKey);
 
       // Simple fetch without axios
-      const profileResponse = await fetch('http://localhost:5000/api/auth/profile', {
+      const profileResponse = await fetch(`${API_BASE_URL}/api/auth/profile`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -75,14 +77,14 @@ export default function AccountsPage() {
 
       // Fetch WhatsApp accounts
       const [accountsResponse, connectedResponse] = await Promise.all([
-        fetch(`http://localhost:5000/api/whatsapp/accounts/${profileData.user.id}`, {
+        fetch(`${API_BASE_URL}/api/whatsapp/accounts/${profileData.user.id}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
             'X-API-Key': storedApiKey
           }
         }),
-        fetch(`http://localhost:5000/api/whatsapp/connected/${profileData.user.id}`, {
+        fetch(`${API_BASE_URL}/api/whatsapp/connected/${profileData.user.id}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -113,7 +115,7 @@ export default function AccountsPage() {
 
     setIsCreatingAccount(true);
     try {
-      const response = await fetch('http://localhost:5000/api/whatsapp/create-account', {
+      const response = await fetch(`${API_BASE_URL}/api/whatsapp/create-account`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -138,7 +140,7 @@ export default function AccountsPage() {
 
   const checkConnectionStatus = async (accountToken: string) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/whatsapp/status/${accountToken}`, {
+      const response = await fetch(`${API_BASE_URL}/api/whatsapp/status/${accountToken}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
