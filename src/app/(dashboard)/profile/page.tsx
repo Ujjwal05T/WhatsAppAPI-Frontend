@@ -22,7 +22,7 @@ interface ProfileData {
     lastLogin?: string;
     isActive: boolean;
   };
-  statistics: {
+  statistics?: {
     totalWhatsAppAccounts: number;
     connectedWhatsAppAccounts: number;
     lastLogin?: string;
@@ -154,8 +154,8 @@ export default function ProfilePage() {
     return null;
   }
 
-  const connectionRate = profileData.statistics.totalWhatsAppAccounts > 0
-    ? Math.round((profileData.statistics.connectedWhatsAppAccounts / profileData.statistics.totalWhatsAppAccounts) * 100)
+  const connectionRate = (profileData.statistics?.totalWhatsAppAccounts ?? 0) > 0
+    ? Math.round(((profileData.statistics?.connectedWhatsAppAccounts ?? 0) / (profileData.statistics?.totalWhatsAppAccounts ?? 1)) * 100)
     : 0;
 
   return (
@@ -283,13 +283,13 @@ export default function ProfilePage() {
             <div className="grid gap-6 md:grid-cols-3">
               <div className="text-center">
                 <div className="text-3xl font-bold text-gray-900">
-                  {profileData.statistics.totalWhatsAppAccounts}
+                  {profileData.statistics?.totalWhatsAppAccounts ?? 0}
                 </div>
                 <p className="text-sm text-gray-600 mt-1">Total Accounts</p>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-green-600">
-                  {profileData.statistics.connectedWhatsAppAccounts}
+                  {profileData.statistics?.connectedWhatsAppAccounts ?? 0}
                 </div>
                 <p className="text-sm text-gray-600 mt-1">Connected</p>
               </div>
@@ -301,7 +301,7 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {profileData.statistics.totalWhatsAppAccounts === 0 && (
+            {(profileData.statistics?.totalWhatsAppAccounts ?? 0) === 0 && (
               <div className="mt-6 text-center p-4 bg-blue-50 rounded-lg">
                 <p className="text-blue-800 mb-3">
                   You haven&apos;t created any WhatsApp accounts yet. Get started by creating your first account!
