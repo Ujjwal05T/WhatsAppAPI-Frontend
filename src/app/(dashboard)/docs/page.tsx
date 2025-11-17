@@ -8,6 +8,34 @@ import { useState } from 'react';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
+interface CodeBlockProps {
+  code: string;
+  language: string;
+  id: string;
+  copiedText: string | null;
+  onCopy: (text: string, id: string) => void;
+}
+
+const CodeBlock = ({ code, language, id, copiedText, onCopy }: CodeBlockProps) => (
+  <div className="relative">
+    <div className="absolute right-2 top-2">
+      <button
+        onClick={() => onCopy(code, id)}
+        className="p-2 rounded-md hover:bg-gray-700 transition-colors"
+      >
+        {copiedText === id ? (
+          <Check className="h-4 w-4 text-green-400" />
+        ) : (
+          <Copy className="h-4 w-4 text-gray-400" />
+        )}
+      </button>
+    </div>
+    <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto">
+      <code className={`language-${language}`}>{code}</code>
+    </pre>
+  </div>
+);
+
 export default function DocsPage() {
   const [copiedText, setCopiedText] = useState<string | null>(null);
 
@@ -16,26 +44,6 @@ export default function DocsPage() {
     setCopiedText(id);
     setTimeout(() => setCopiedText(null), 2000);
   };
-
-  const CodeBlock = ({ code, language, id }: { code: string; language: string; id: string }) => (
-    <div className="relative">
-      <div className="absolute right-2 top-2">
-        <button
-          onClick={() => copyToClipboard(code, id)}
-          className="p-2 rounded-md hover:bg-gray-700 transition-colors"
-        >
-          {copiedText === id ? (
-            <Check className="h-4 w-4 text-green-400" />
-          ) : (
-            <Copy className="h-4 w-4 text-gray-400" />
-          )}
-        </button>
-      </div>
-      <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto">
-        <code className={`language-${language}`}>{code}</code>
-      </pre>
-    </div>
-  );
 
   return (
     <>
@@ -104,6 +112,8 @@ export default function DocsPage() {
                   <CodeBlock
                     id="send-message-example"
                     language="json"
+                    copiedText={copiedText}
+                    onCopy={copyToClipboard}
                     code={`{
   "to": "919876543210",
   "message": "Hello from WhatsApp API!"
@@ -165,6 +175,8 @@ export default function DocsPage() {
                   <CodeBlock
                     id="send-message-curl"
                     language="bash"
+                    copiedText={copiedText}
+                    onCopy={copyToClipboard}
                     code={`curl -X POST ${API_BASE_URL}/api/send-message \\
   -H "X-API-Key: your_api_key" \\
   -H "Authorization: Bearer your_account_token" \\
@@ -179,6 +191,8 @@ export default function DocsPage() {
                   <CodeBlock
                     id="send-message-js"
                     language="javascript"
+                    copiedText={copiedText}
+                    onCopy={copyToClipboard}
                     code={`const response = await fetch('${API_BASE_URL}/api/send-message', {
   method: 'POST',
   headers: {
@@ -205,6 +219,8 @@ console.log(result);`}
               <CodeBlock
                 id="send-message-response"
                 language="json"
+                copiedText={copiedText}
+                onCopy={copyToClipboard}
                 code={`{
   "success": true,
   "messageId": "3EB0ABC123456789",
@@ -322,6 +338,8 @@ console.log(result);`}
                   <CodeBlock
                     id="send-media-curl"
                     language="bash"
+                    copiedText={copiedText}
+                    onCopy={copyToClipboard}
                     code={`curl -X POST ${API_BASE_URL}/api/send-media \\
   -H "X-API-Key: your_api_key" \\
   -H "Authorization: Bearer your_account_token" \\
@@ -334,6 +352,8 @@ console.log(result);`}
                   <CodeBlock
                     id="send-media-js"
                     language="javascript"
+                    copiedText={copiedText}
+                    onCopy={copyToClipboard}
                     code={`// Get file from input element
 const fileInput = document.querySelector('input[type="file"]');
 const file = fileInput.files[0];
@@ -367,6 +387,8 @@ console.log(result);`}
               <CodeBlock
                 id="send-media-response"
                 language="json"
+                copiedText={copiedText}
+                onCopy={copyToClipboard}
                 code={`{
   "success": true,
   "messageId": "3EB0ABC123456789",
@@ -403,6 +425,8 @@ console.log(result);`}
                 <CodeBlock
                   id="error-401"
                   language="json"
+                  copiedText={copiedText}
+                  onCopy={copyToClipboard}
                   code={`{
   "success": false,
   "error": "Unauthorized: Invalid API Key"
@@ -414,6 +438,8 @@ console.log(result);`}
                 <CodeBlock
                   id="error-400"
                   language="json"
+                  copiedText={copiedText}
+                  onCopy={copyToClipboard}
                   code={`{
   "success": false,
   "error": "Invalid phone number format. Use: countrycode+number (e.g., 919876543210)"
@@ -425,6 +451,8 @@ console.log(result);`}
                 <CodeBlock
                   id="error-503"
                   language="json"
+                  copiedText={copiedText}
+                  onCopy={copyToClipboard}
                   code={`{
   "success": false,
   "error": "WhatsApp client not available. Please try reconnecting.",
@@ -437,6 +465,8 @@ console.log(result);`}
                 <CodeBlock
                   id="error-429"
                   language="json"
+                  copiedText={copiedText}
+                  onCopy={copyToClipboard}
                   code={`{
   "success": false,
   "error": "Rate limit exceeded. Please try again later.",

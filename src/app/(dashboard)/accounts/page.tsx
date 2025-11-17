@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Check, Shield, Plus, Phone, QrCode, RefreshCw, Copy, Trash2, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Shield, Plus, Phone, QrCode, RefreshCw, Copy, Trash2, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { AccountsSkeleton } from '@/components/skeletons/dashboard-skeleton';
 import { toast } from 'sonner';
 import {
@@ -47,7 +47,7 @@ interface WhatsAppAccount {
 }
 
 export default function AccountsPage() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<ProfileData['user'] | null>(null);
   const [accounts, setAccounts] = useState<WhatsAppAccount[]>([]);
   const [connectedAccounts, setConnectedAccounts] = useState<WhatsAppAccount[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -115,9 +115,9 @@ export default function AccountsPage() {
         console.warn('Failed to fetch some account data');
       }
 
-    } catch (err: any) {
+    } catch (err) {
       console.error('Failed to fetch data:', err);
-      setError(err.message || 'Failed to load data');
+      setError(err instanceof Error ? err.message : 'Failed to load data');
     } finally {
       setIsLoading(false);
     }
@@ -163,10 +163,10 @@ export default function AccountsPage() {
       setTimeout(() => {
         window.location.href = `/connect/${data.account.accountToken}`;
       }, 1000);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Failed to create account:', err);
       toast.error('Failed to create account', {
-        description: err.message || 'Unknown error occurred'
+        description: err instanceof Error ? err.message : 'Unknown error occurred'
       });
     } finally {
       setIsCreatingAccount(false);
@@ -238,7 +238,7 @@ export default function AccountsPage() {
           description: data.error || 'Unknown error'
         });
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error('Failed to delete account:', err);
       toast.error('Failed to delete account');
     } finally {
