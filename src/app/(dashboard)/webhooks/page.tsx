@@ -10,7 +10,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Webhook, Plus, CheckCircle, XCircle, Settings, Send, Copy, Trash2, Eye, EyeOff } from 'lucide-react';
+import { Webhook, Plus, CheckCircle, XCircle, Settings, Send, Copy, Trash2, Eye, EyeOff, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 import { authAPI, whatsappAPI } from '@/lib/api';
 import { copyToClipboard as copyText } from '@/lib/utils';
@@ -41,6 +41,8 @@ export default function WebhooksPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRegistering, setIsRegistering] = useState(false);
   const [showRegisterDialog, setShowRegisterDialog] = useState(false);
+  const [editingWebhook, setEditingWebhook] = useState<WebhookData | null>(null);
+  const [showEditDialog, setShowEditDialog] = useState(false);
   const [webhookData, setWebhookData] = useState({
     url: '',
     secret: '',
@@ -135,6 +137,55 @@ export default function WebhooksPage() {
       }
     } catch {
       toast.error('Failed to register webhook');
+    } finally {
+      setIsRegistering(false);
+    }
+  };
+
+  const openEditDialog = (webhook: WebhookData) => {
+    setEditingWebhook(webhook);
+    setWebhookData({
+      url: webhook.url,
+      secret: '',
+      events: webhook.events
+    });
+    setShowEditDialog(true);
+  };
+
+  const updateWebhook = async () => {
+    if (!editingWebhook || !webhookData.url) {
+      toast.error('Please fill all required fields');
+      return;
+    }
+
+    setIsRegistering(true);
+    try {
+      const apiKey = localStorage.getItem('apiKey');
+      const response = await fetch(`${API_BASE_URL}/api/webhooks/${editingWebhook.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': apiKey || ''
+        },
+        body: JSON.stringify({
+          url: webhookData.url,
+          secret: webhookData.secret || undefined,
+          events: webhookData.events
+        })
+      });
+
+      if (response.ok) {
+        toast.success('Webhook updated successfully!');
+        setShowEditDialog(false);
+        setEditingWebhook(null);
+        setWebhookData({ url: '', secret: '', events: ['message.received'] });
+        await fetchWebhooks(selectedAccount, apiKey!);
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.error || 'Failed to update webhook');
+      }
+    } catch {
+      toast.error('Failed to update webhook');
     } finally {
       setIsRegistering(false);
     }
@@ -434,6 +485,14 @@ export default function WebhooksPage() {
                       <Button
                         size="sm"
                         variant="outline"
+                        onClick={() => openEditDialog(webhook)}
+                      >
+                        <Pencil className="h-3 w-3 mr-1" />
+                        Edit
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
                         onClick={() => testWebhook(webhook.id)}
                       >
                         <Send className="h-3 w-3 mr-1" />
@@ -536,6 +595,73 @@ export default function WebhooksPage() {
           </Button>
         </CardContent>
       </Card>
+
+      {/* Edit Webhook Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Webhook</DialogTitle>
+            <DialogDescription>
+              Update your webhook URL and settings
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="edit-url">Webhook URL *</Label>
+              <Input
+                id="edit-url"
+                placeholder="https://your-server.com/whatsapp-webhook"
+                value={webhookData.url}
+                onChange={(e) => setWebhookData(prev => ({ ...prev, url: e.target.value }))}
+                className='my-2'
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-secret">Secret Key (Optional)</Label>
+              <Input
+                id="edit-secret"
+                type="password"
+                placeholder="Leave empty to keep existing secret"
+                value={webhookData.secret}
+                onChange={(e) => setWebhookData(prev => ({ ...prev, secret: e.target.value }))}
+                className='my-2'
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Leave empty to keep the existing secret key
+              </p>
+            </div>
+            <div>
+              <Label>Events</Label>
+              <div className="flex gap-2 mt-2">
+                {['message.received'].map((event) => (
+                  <Badge
+                    key={event}
+                    variant={webhookData.events.includes(event) ? "default" : "outline"}
+                    className="cursor-pointer"
+                    onClick={() => {
+                      setWebhookData(prev => ({
+                        ...prev,
+                        events: prev.events.includes(event)
+                          ? prev.events.filter(e => e !== event)
+                          : [...prev.events, event]
+                      }));
+                    }}
+                  >
+                    {event}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+            <Button
+              onClick={updateWebhook}
+              disabled={isRegistering || !webhookData.url}
+              className="w-full"
+            >
+              {isRegistering ? 'Updating...' : 'Update Webhook'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

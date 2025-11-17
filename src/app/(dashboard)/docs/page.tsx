@@ -3,7 +3,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MessageSquare, Image, Copy, Check } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { MessageSquare, Image, Copy, Check, Webhook, FileText, ExternalLink } from 'lucide-react';
 import { useState } from 'react';
 import { copyToClipboard as copyText } from '@/lib/utils';
 
@@ -60,6 +61,50 @@ export default function DocsPage() {
       </div>
 
       <div className="space-y-6">
+        {/* Quick Links to Full Documentation */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Documentation Resources</CardTitle>
+            <CardDescription>Complete guides and API references</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-2 gap-4">
+              <Button
+                variant="outline"
+                className="h-auto p-4 flex items-start justify-between hover:bg-gray-50"
+                onClick={() => window.open('/API_DOCs.md', '_blank')}
+              >
+                <div className="flex items-start gap-3 text-left">
+                  <FileText className="h-5 w-5 text-blue-600 mt-1" />
+                  <div>
+                    <h3 className="font-semibold mb-1">Complete API Documentation</h3>
+                    <p className="text-sm text-gray-600">
+                      Full reference for all endpoints, authentication, and examples
+                    </p>
+                  </div>
+                </div>
+                <ExternalLink className="h-4 w-4 text-gray-400" />
+              </Button>
+              <Button
+                variant="outline"
+                className="h-auto p-4 flex items-start justify-between hover:bg-gray-50"
+                onClick={() => window.open('/WEBHOOKS.md', '_blank')}
+              >
+                <div className="flex items-start gap-3 text-left">
+                  <Webhook className="h-5 w-5 text-purple-600 mt-1" />
+                  <div>
+                    <h3 className="font-semibold mb-1">Webhooks Guide</h3>
+                    <p className="text-sm text-gray-600">
+                      Learn how to receive incoming messages in real-time
+                    </p>
+                  </div>
+                </div>
+                <ExternalLink className="h-4 w-4 text-gray-400" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Authentication Info */}
         <Card>
           <CardHeader>
@@ -416,6 +461,222 @@ console.log(result);`}
   "timestamp": "2025-01-15T10:30:00.000Z"
 }`}
               />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Webhooks Section */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="bg-purple-100 p-2 rounded-lg">
+                <Webhook className="h-6 w-6 text-purple-600" />
+              </div>
+              <div>
+                <CardTitle>Webhooks - Receive Incoming Messages</CardTitle>
+                <CardDescription>Get real-time notifications when messages are received</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Overview */}
+            <div>
+              <p className="text-sm text-gray-700 mb-4">
+                Webhooks allow you to receive incoming WhatsApp messages in real-time by registering a URL endpoint.
+                When a message is received, we&apos;ll send a POST request to your webhook URL with the message data.
+              </p>
+            </div>
+
+            {/* Endpoint */}
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <Badge className="bg-green-600">POST</Badge>
+                <code className="text-sm bg-gray-100 px-3 py-1 rounded">/api/webhooks/register</code>
+              </div>
+            </div>
+
+            {/* Webhook Payload */}
+            <div>
+              <h4 className="font-semibold mb-3">Webhook Payload (What you receive)</h4>
+              <CodeBlock
+                id="webhook-payload"
+                language="json"
+                copiedText={copiedText}
+                onCopy={copyToClipboard}
+                code={`{
+  "event": "message.received",
+  "timestamp": "2025-01-15T10:30:00.000Z",
+  "accountToken": "whatsapp_abc123",
+  "message": {
+    "id": "3EB0ABC123456789",
+    "from": "919876543210",
+    "fromName": "John Doe",
+    "body": "Hello! This is an incoming message",
+    "timestamp": "2025-01-15T10:30:00.000Z",
+    "type": "text",
+    "isForwarded": false,
+    "hasMedia": false
+  }
+}`}
+              />
+            </div>
+
+            {/* Media Message Payload */}
+            <div>
+              <h4 className="font-semibold mb-3">Media Message Payload</h4>
+              <CodeBlock
+                id="webhook-media-payload"
+                language="json"
+                copiedText={copiedText}
+                onCopy={copyToClipboard}
+                code={`{
+  "event": "message.received",
+  "timestamp": "2025-01-15T10:30:00.000Z",
+  "accountToken": "whatsapp_abc123",
+  "message": {
+    "id": "3EB0ABC123456789",
+    "from": "919876543210",
+    "fromName": "Jane Doe",
+    "body": "Check out this photo!",
+    "timestamp": "2025-01-15T10:30:00.000Z",
+    "type": "image",
+    "hasMedia": true,
+    "media": {
+      "mimetype": "image/jpeg",
+      "data": "base64_encoded_image_data...",
+      "filename": "photo.jpg"
+    }
+  }
+}`}
+              />
+            </div>
+
+            {/* Server Implementation Example */}
+            <div>
+              <h4 className="font-semibold mb-3">Server Implementation Example</h4>
+              <Tabs defaultValue="nodejs" className="w-full">
+                <TabsList>
+                  <TabsTrigger value="nodejs">Node.js</TabsTrigger>
+                  <TabsTrigger value="python">Python</TabsTrigger>
+                </TabsList>
+                <TabsContent value="nodejs" className="mt-3">
+                  <CodeBlock
+                    id="webhook-nodejs"
+                    language="javascript"
+                    copiedText={copiedText}
+                    onCopy={copyToClipboard}
+                    code={`const express = require('express');
+const app = express();
+
+app.use(express.json());
+
+app.post('/whatsapp-webhook', (req, res) => {
+  const { event, message, accountToken } = req.body;
+
+  console.log('Received message:', message);
+  console.log('From:', message.from);
+  console.log('Message body:', message.body);
+
+  // Process the message here
+  // - Store in database
+  // - Trigger automation
+  // - Send auto-reply
+
+  res.status(200).json({ success: true });
+});
+
+app.listen(3000, () => {
+  console.log('Webhook server running on port 3000');
+});`}
+                  />
+                </TabsContent>
+                <TabsContent value="python" className="mt-3">
+                  <CodeBlock
+                    id="webhook-python"
+                    language="python"
+                    copiedText={copiedText}
+                    onCopy={copyToClipboard}
+                    code={`from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+
+@app.route('/whatsapp-webhook', methods=['POST'])
+def webhook():
+    data = request.json
+    event = data.get('event')
+    message = data.get('message')
+    account_token = data.get('accountToken')
+
+    print(f"Received message: {message}")
+    print(f"From: {message['from']}")
+    print(f"Message body: {message['body']}")
+
+    # Process the message here
+    # - Store in database
+    # - Trigger automation
+    # - Send auto-reply
+
+    return jsonify({'success': True}), 200
+
+if __name__ == '__main__':
+    app.run(port=3000)`}
+                  />
+                </TabsContent>
+              </Tabs>
+            </div>
+
+            {/* Register Webhook */}
+            <div>
+              <h4 className="font-semibold mb-3">Register Your Webhook</h4>
+              <CodeBlock
+                id="register-webhook"
+                language="bash"
+                copiedText={copiedText}
+                onCopy={copyToClipboard}
+                code={`curl -X POST ${API_BASE_URL}/api/webhooks/register \\
+  -H "X-API-Key: your_api_key" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "accountToken": "your_account_token",
+    "url": "https://your-server.com/whatsapp-webhook",
+    "secret": "optional_secret_key",
+    "events": ["message.received"]
+  }'`}
+              />
+            </div>
+
+            {/* Security Best Practices */}
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <h4 className="font-semibold mb-2 text-yellow-900">Security Best Practices</h4>
+              <ul className="space-y-2 text-sm text-yellow-800">
+                <li className="flex items-start gap-2">
+                  <span className="mt-1">🔒</span>
+                  <span>Use HTTPS for your webhook URL</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-1">🔑</span>
+                  <span>Implement webhook signature verification using the secret key</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-1">⚡</span>
+                  <span>Respond quickly (within 5 seconds) and process async</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-1">📝</span>
+                  <span>Log all webhook events for debugging and auditing</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* View Full Docs */}
+            <div className="flex justify-center pt-2">
+              <Button
+                variant="outline"
+                onClick={() => window.open('/WEBHOOKS.md', '_blank')}
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                View Complete Webhooks Documentation
+              </Button>
             </div>
           </CardContent>
         </Card>
