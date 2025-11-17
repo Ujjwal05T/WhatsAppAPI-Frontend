@@ -4,8 +4,19 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Check, Shield, Plus, Phone, QrCode, RefreshCw } from 'lucide-react';
+import { Check, Shield, Plus, Phone, QrCode, RefreshCw, Copy, Trash2, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { AccountsSkeleton } from '@/components/skeletons/dashboard-skeleton';
+import { toast } from 'sonner';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
@@ -43,6 +54,8 @@ export default function AccountsPage() {
   const [isCreatingAccount, setIsCreatingAccount] = useState(false);
   const [error, setError] = useState<string>('');
   const [apiKey, setApiKey] = useState<string>('');
+  const [deletingAccountToken, setDeletingAccountToken] = useState<string | null>(null);
+  const [checkingStatus, setCheckingStatus] = useState<string | null>(null);
 
   useEffect(() => {
     fetchUserData();
@@ -115,6 +128,9 @@ export default function AccountsPage() {
 
     setIsCreatingAccount(true);
     try {
+      console.log('Creating account for user:', user.id);
+      console.log('API Key:', apiKey ? 'Present' : 'Missing');
+
       const response = await fetch(`${API_BASE_URL}/api/whatsapp/create-account`, {
         method: 'POST',
         headers: {
@@ -124,21 +140,41 @@ export default function AccountsPage() {
         body: JSON.stringify({ userId: user.id })
       });
 
+      console.log('Response status:', response.status);
+
       if (!response.ok) {
-        throw new Error(`Failed to create account: ${response.status}`);
+        const errorData = await response.json();
+        console.error('Error response:', errorData);
+        throw new Error(errorData.error || `Failed to create account: ${response.status}`);
       }
 
       const data = await response.json();
-      window.location.href = `/connect/${data.accountToken}`;
+      console.log('Success response:', data);
+
+      if (!data.account || !data.account.accountToken) {
+        console.error('Invalid response structure:', data);
+        throw new Error('Invalid response from server: missing account token');
+      }
+
+      toast.success('Account created successfully!', {
+        description: 'Redirecting to QR code scanner...'
+      });
+
+      setTimeout(() => {
+        window.location.href = `/connect/${data.account.accountToken}`;
+      }, 1000);
     } catch (err: any) {
       console.error('Failed to create account:', err);
-      setError(err.message || 'Failed to create account');
+      toast.error('Failed to create account', {
+        description: err.message || 'Unknown error occurred'
+      });
     } finally {
       setIsCreatingAccount(false);
     }
   };
 
   const checkConnectionStatus = async (accountToken: string) => {
+    setCheckingStatus(accountToken);
     try {
       const response = await fetch(`${API_BASE_URL}/api/whatsapp/status/${accountToken}`, {
         method: 'GET',
@@ -151,11 +187,62 @@ export default function AccountsPage() {
       if (response.ok) {
         const data = await response.json();
         if (data.isConnected) {
+          toast.success('Account is connected!', {
+            description: `${data.phoneNumber || 'WhatsApp'} is active`
+          });
           fetchUserData(); // Refresh data
+        } else {
+          toast.info('Account is not connected', {
+            description: 'Please scan the QR code to connect'
+          });
         }
+      } else {
+        toast.error('Failed to check status');
       }
     } catch (err) {
       console.error('Failed to check status:', err);
+      toast.error('Failed to check connection status');
+    } finally {
+      setCheckingStatus(null);
+    }
+  };
+
+  const copyTokenToClipboard = async (token: string) => {
+    try {
+      await navigator.clipboard.writeText(token);
+      toast.success('Token copied to clipboard!', {
+        description: 'You can now use this token in your API requests'
+      });
+    } catch (err) {
+      console.error('Failed to copy:', err);
+      toast.error('Failed to copy token');
+    }
+  };
+
+  const deleteAccount = async (accountToken: string) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/whatsapp/account/${accountToken}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': apiKey
+        }
+      });
+
+      if (response.ok) {
+        toast.success('Account deleted successfully!');
+        fetchUserData(); // Refresh list
+      } else {
+        const data = await response.json();
+        toast.error('Failed to delete account', {
+          description: data.error || 'Unknown error'
+        });
+      }
+    } catch (err: any) {
+      console.error('Failed to delete account:', err);
+      toast.error('Failed to delete account');
+    } finally {
+      setDeletingAccountToken(null);
     }
   };
 
@@ -224,33 +311,33 @@ export default function AccountsPage() {
 
         {/* Create Account Button */}
         <div className="mb-6 flex justify-end">
-          <Button onClick={createNewAccount} disabled={isCreatingAccount}>
+          <Button onClick={createNewAccount} disabled={isCreatingAccount} className="shadow-md">
             <Plus className="h-4 w-4 mr-2" />
             {isCreatingAccount ? 'Creating...' : 'Add New Account'}
           </Button>
         </div>
 
         {/* Statistics Card */}
-        <Card className="mb-6">
+        <Card className="mb-6 shadow-sm">
           <CardHeader>
             <CardTitle>Account Statistics</CardTitle>
             <CardDescription>Your WhatsApp API usage overview</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid gap-6 md:grid-cols-3">
-              <div className="text-center">
+              <div className="text-center p-4 bg-gray-50 rounded-lg">
                 <div className="text-3xl font-bold text-gray-900">
                   {accounts.length}
                 </div>
                 <p className="text-sm text-gray-600 mt-1">Total Accounts</p>
               </div>
-              <div className="text-center">
+              <div className="text-center p-4 bg-green-50 rounded-lg">
                 <div className="text-3xl font-bold text-green-600">
                   {connectedAccounts.length}
                 </div>
                 <p className="text-sm text-gray-600 mt-1">Connected</p>
               </div>
-              <div className="text-center">
+              <div className="text-center p-4 bg-blue-50 rounded-lg">
                 <div className="text-3xl font-bold text-blue-600">
                   {connectionRate}%
                 </div>
@@ -259,11 +346,14 @@ export default function AccountsPage() {
             </div>
 
             {accounts.length === 0 && (
-              <div className="mt-6 text-center p-4 bg-blue-50 rounded-lg">
-                <p className="text-blue-800 mb-3">
-                  You haven't created any WhatsApp accounts yet. Get started by creating your first account!
+              <div className="mt-6 text-center p-6 bg-blue-50 rounded-lg border-2 border-dashed border-blue-200">
+                <Phone className="h-12 w-12 text-blue-600 mx-auto mb-3" />
+                <p className="text-blue-800 font-medium mb-2">No accounts yet</p>
+                <p className="text-blue-600 text-sm mb-4">
+                  Get started by creating your first WhatsApp account!
                 </p>
-                <Button onClick={createNewAccount}>
+                <Button onClick={createNewAccount} className="shadow-md">
+                  <Plus className="h-4 w-4 mr-2" />
                   Create Your First Account
                 </Button>
               </div>
@@ -272,71 +362,76 @@ export default function AccountsPage() {
         </Card>
 
         {/* Accounts List */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Your WhatsApp Accounts</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {accounts.length === 0 ? (
-              <div className="text-center py-12">
-                <Phone className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No Accounts Yet</h3>
-                <p className="text-gray-600 mb-6">
-                  Create your first WhatsApp account to get started
-                </p>
-                <Button onClick={createNewAccount}>
-                  Create Account
-                </Button>
-              </div>
-            ) : (
+        {accounts.length > 0 && (
+          <Card className="shadow-sm">
+            <CardHeader>
+              <CardTitle>Your WhatsApp Accounts ({accounts.length})</CardTitle>
+              <CardDescription>Click on any account to view details and manage settings</CardDescription>
+            </CardHeader>
+            <CardContent>
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {accounts.map((account) => (
-                  <Card key={account.id}>
-                    <CardHeader>
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="text-sm font-medium">
-                          {account.phoneNumber || 'Not Connected'}
-                        </CardTitle>
-                        <Badge variant={account.isConnected ? "default" : "secondary"}>
+                  <Card key={account.id} className="shadow-sm hover:shadow-md transition-shadow">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Phone className="h-4 w-4 text-gray-500" />
+                            <CardTitle className="text-base font-semibold">
+                              {account.phoneNumber || 'Not Connected'}
+                            </CardTitle>
+                          </div>
+                          <CardDescription className="text-sm">
+                            {account.whatsappName || 'Waiting for connection...'}
+                          </CardDescription>
+                        </div>
+                        <Badge variant={account.isConnected ? "default" : "secondary"} className="ml-2">
                           {account.isConnected ? (
-                            <Check className="h-3 w-3 mr-1" />
+                            <>
+                              <CheckCircle className="h-3 w-3 mr-1" />
+                              Active
+                            </>
                           ) : (
-                            <span className="h-3 w-3 mr-1">○</span>
+                            <>
+                              <XCircle className="h-3 w-3 mr-1" />
+                              Inactive
+                            </>
                           )}
-                          {account.isConnected ? 'Connected' : 'Disconnected'}
                         </Badge>
                       </div>
-                      <CardDescription>
-                        {account.whatsappName || 'Waiting for connection...'}
-                      </CardDescription>
                     </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2 text-sm">
+                    <CardContent className="space-y-3">
+                      {/* Token Section */}
+                      <div className="bg-gray-50 rounded-lg p-3 space-y-2">
                         <div className="flex items-center justify-between">
-                          <p className="text-gray-600">
-                            Token: {formatAccountToken(account.accountToken)}
-                          </p>
-                          <button
-                            onClick={() => {
-                              navigator.clipboard.writeText(account.accountToken);
-                              console.log('📋 Account Token copied:', account.accountToken);
-                              alert('Token copied to clipboard!');
-                            }}
-                            className="text-xs text-blue-600 hover:text-blue-800 underline"
+                          <p className="text-xs text-gray-600 font-medium">Account Token</p>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 text-xs"
+                            onClick={() => copyTokenToClipboard(account.accountToken)}
                           >
-                            Copy Full Token
-                          </button>
+                            <Copy className="h-3 w-3 mr-1" />
+                            Copy
+                          </Button>
                         </div>
-                        <p className="text-gray-600">
-                          Created: {formatDate(account.createdAt)}
+                        <p className="text-xs font-mono text-gray-700 bg-white p-2 rounded border">
+                          {formatAccountToken(account.accountToken)}
                         </p>
                       </div>
 
-                      <div className="flex space-x-2 mt-4">
+                      {/* Created Date */}
+                      <div className="flex items-center text-xs text-gray-600">
+                        <span className="font-medium">Created:</span>
+                        <span className="ml-2">{formatDate(account.createdAt)}</span>
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="flex gap-2 pt-2">
                         {!account.isConnected && (
                           <Button
                             size="sm"
-                            variant="outline"
+                            className="flex-1"
                             onClick={() => window.location.href = `/connect/${account.accountToken}`}
                           >
                             <QrCode className="h-3 w-3 mr-1" />
@@ -346,19 +441,53 @@ export default function AccountsPage() {
                         <Button
                           size="sm"
                           variant="outline"
+                          className="flex-1"
                           onClick={() => checkConnectionStatus(account.accountToken)}
+                          disabled={checkingStatus === account.accountToken}
                         >
-                          <RefreshCw className="h-3 w-3 mr-1" />
-                          Check
+                          <RefreshCw className={`h-3 w-3 mr-1 ${checkingStatus === account.accountToken ? 'animate-spin' : ''}`} />
+                          {checkingStatus === account.accountToken ? 'Checking...' : 'Check'}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => setDeletingAccountToken(account.accountToken)}
+                        >
+                          <Trash2 className="h-3 w-3" />
                         </Button>
                       </div>
                     </CardContent>
                   </Card>
                 ))}
               </div>
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deletingAccountToken} onOpenChange={() => setDeletingAccountToken(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-red-600" />
+              Delete WhatsApp Account
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this WhatsApp account? This action cannot be undone.
+              You will need to reconnect by scanning a new QR code.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deletingAccountToken && deleteAccount(deletingAccountToken)}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Delete Account
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
