@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Shield, Plus, Phone, QrCode, RefreshCw, Copy, Trash2, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { AccountsSkeleton } from '@/components/skeletons/dashboard-skeleton';
 import { toast } from 'sonner';
+import { copyToClipboard as copyText } from '@/lib/utils';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -209,13 +210,15 @@ export default function AccountsPage() {
 
   const copyTokenToClipboard = async (token: string) => {
     try {
-      await navigator.clipboard.writeText(token);
+      await copyText(token);
       toast.success('Token copied to clipboard!', {
         description: 'You can now use this token in your API requests'
       });
     } catch (err) {
       console.error('Failed to copy:', err);
-      toast.error('Failed to copy token');
+      toast.error('Failed to copy token', {
+        description: 'Please try selecting and copying manually'
+      });
     }
   };
 

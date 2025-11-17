@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MessageSquare, Image, Copy, Check } from 'lucide-react';
 import { useState } from 'react';
+import { copyToClipboard as copyText } from '@/lib/utils';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
@@ -39,10 +40,17 @@ const CodeBlock = ({ code, language, id, copiedText, onCopy }: CodeBlockProps) =
 export default function DocsPage() {
   const [copiedText, setCopiedText] = useState<string | null>(null);
 
-  const copyToClipboard = (text: string, id: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedText(id);
-    setTimeout(() => setCopiedText(null), 2000);
+  const copyToClipboard = async (text: string, id: string) => {
+    try {
+      await copyText(text);
+      setCopiedText(id);
+      setTimeout(() => setCopiedText(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+      // Still show success briefly to indicate the attempt was made
+      setCopiedText(id);
+      setTimeout(() => setCopiedText(null), 1000);
+    }
   };
 
   return (
