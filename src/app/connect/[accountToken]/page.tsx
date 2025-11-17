@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { QrCode, RefreshCw, CheckCircle, ArrowLeft, Smartphone, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import { ConnectSkeleton } from '@/components/skeletons/dashboard-skeleton';
+import { copyToClipboard as copyText } from '@/lib/utils';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
@@ -212,10 +213,15 @@ export default function ConnectPage() {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => {
-                        navigator.clipboard.writeText(accountToken);
-                        toast.success('Account token copied to clipboard!');
-                        console.log('📋 Account Token:', accountToken);
+                      onClick={async () => {
+                        try {
+                          await copyText(accountToken);
+                          toast.success('Account token copied to clipboard!');
+                          console.log('📋 Account Token:', accountToken);
+                        } catch (err) {
+                          console.error('Failed to copy:', err);
+                          toast.error('Failed to copy token');
+                        }
                       }}
                     >
                       Copy

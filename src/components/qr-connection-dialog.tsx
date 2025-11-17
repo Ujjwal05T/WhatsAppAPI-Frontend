@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { QrCode, RefreshCw, CheckCircle, Smartphone, Clock, Copy } from 'lucide-react';
 import { toast } from 'sonner';
+import { copyToClipboard as copyText } from '@/lib/utils';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
@@ -145,9 +146,16 @@ export function QRConnectionDialog({
     }
   };
 
-  const copyAccountToken = () => {
-    navigator.clipboard.writeText(accountToken);
-    toast.success('Account token copied!');
+  const copyAccountToken = async () => {
+    try {
+      await copyText(accountToken);
+      toast.success('Account token copied!');
+    } catch (err) {
+      console.error('Failed to copy:', err);
+      toast.error('Failed to copy token', {
+        description: 'Please try selecting and copying manually'
+      });
+    }
   };
 
   const progressPercentage = ((50 - qrExpiresIn) / 50) * 100;

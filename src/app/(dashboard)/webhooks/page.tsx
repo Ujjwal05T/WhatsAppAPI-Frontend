@@ -13,6 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Webhook, Plus, CheckCircle, XCircle, Settings, Send, Copy, Trash2, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { authAPI, whatsappAPI } from '@/lib/api';
+import { copyToClipboard as copyText } from '@/lib/utils';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
@@ -195,9 +196,16 @@ export default function WebhooksPage() {
     }
   };
 
-  const copyAccountToken = (token: string) => {
-    navigator.clipboard.writeText(token);
-    toast.success('Account token copied to clipboard');
+  const copyAccountToken = async (token: string) => {
+    try {
+      await copyText(token);
+      toast.success('Account token copied to clipboard');
+    } catch (err) {
+      console.error('Failed to copy:', err);
+      toast.error('Failed to copy token', {
+        description: 'Please try selecting and copying manually'
+      });
+    }
   };
 
   if (isLoading) {

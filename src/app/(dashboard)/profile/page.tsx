@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Copy, Check, User, Key, Calendar, Shield, Activity } from 'lucide-react';
 import { authAPI } from '@/lib/api';
 import { ProfileSkeleton } from '@/components/skeletons/dashboard-skeleton';
+import { copyToClipboard as copyText } from '@/lib/utils';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
@@ -92,11 +93,14 @@ export default function ProfilePage() {
   const copyToClipboard = async () => {
     if (profileData?.user.apiKey) {
       try {
-        await navigator.clipboard.writeText(profileData.user.apiKey);
+        await copyText(profileData.user.apiKey);
         setIsCopied(true);
         setTimeout(() => setIsCopied(false), 2000);
       } catch (err) {
         console.error('Failed to copy:', err);
+        // Still show feedback to the user
+        setIsCopied(true);
+        setTimeout(() => setIsCopied(false), 1000);
       }
     }
   };
