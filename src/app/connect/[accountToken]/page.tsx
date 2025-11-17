@@ -5,9 +5,8 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { QrCode, RefreshCw, CheckCircle, XCircle, ArrowLeft, Smartphone, Clock } from 'lucide-react';
+import { QrCode, RefreshCw, CheckCircle, ArrowLeft, Smartphone, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import { ConnectSkeleton } from '@/components/skeletons/dashboard-skeleton';
 
@@ -64,6 +63,7 @@ export default function ConnectPage() {
       clearInterval(qrRefreshInterval);
       clearInterval(countdownInterval);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [accountToken, isConnected]);
 
   
@@ -102,8 +102,8 @@ export default function ConnectPage() {
         // Retry after a short delay
         setTimeout(() => fetchQRCode(), 3000);
       }
-    } catch (err: any) {
-      const errorMessage = err.message || 'Failed to fetch QR code';
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch QR code';
       setError(errorMessage);
       console.error('QR fetch error:', errorMessage);
     } finally {
@@ -147,7 +147,7 @@ export default function ConnectPage() {
         console.log('🔑 Use this token to send messages');
         console.log('================================================');
       }
-    } catch (err: any) {
+    } catch (err) {
       // Don't show error for status checks, just continue trying
       console.error('Status check failed:', err);
     }
@@ -159,8 +159,6 @@ export default function ConnectPage() {
       await fetchQRCode();
       setQrExpiresIn(50); // Reset countdown on manual refresh
       toast.success('QR code refreshed');
-    } catch (err: any) {
-      toast.error('Failed to refresh QR code');
     } finally {
       setIsRefreshing(false);
     }
@@ -224,7 +222,7 @@ export default function ConnectPage() {
                     </Button>
                   </div>
                   <p className="text-xs text-gray-500 mt-2">
-                    Save this token - you'll need it to send messages
+                    Save this token - you&apos;ll need it to send messages
                   </p>
                 </div>
 
@@ -284,7 +282,7 @@ export default function ConnectPage() {
                       <ol className="text-sm text-blue-800 space-y-1 text-left max-w-md mx-auto">
                         <li>1. Open WhatsApp on your phone</li>
                         <li>2. Go to Settings &gt; Linked Devices</li>
-                        <li>3. Tap "Link a device"</li>
+                        <li>3. Tap &quot;Link a device&quot;</li>
                         <li>4. Scan the QR code above</li>
                       </ol>
                     </div>

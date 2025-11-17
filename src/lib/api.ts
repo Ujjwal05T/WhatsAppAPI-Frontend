@@ -58,6 +58,20 @@ export interface LoginResponse {
   token: string;
 }
 
+export interface RegisterResponse {
+  user: User;
+  token: string;
+}
+
+export interface ProfileResponse {
+  user: User;
+  statistics?: {
+    totalWhatsAppAccounts: number;
+    connectedWhatsAppAccounts: number;
+    lastLogin?: string;
+  };
+}
+
 export interface WhatsAppAccountResponse {
   account: WhatsAppAccount;
   accountToken: string;
@@ -66,7 +80,7 @@ export interface WhatsAppAccountResponse {
 // Auth APIs
 export const authAPI = {
   register: async (name: string, mobile: string, password: string) => {
-    const response = await api.post<any>('/api/auth/register', {
+    const response = await api.post<RegisterResponse>('/api/auth/register', {
       name,
       mobile,
       password,
@@ -75,7 +89,7 @@ export const authAPI = {
   },
 
   login: async (mobile: string, password: string) => {
-    const response = await api.post<any>('/api/auth/login', {
+    const response = await api.post<LoginResponse>('/api/auth/login', {
       mobile,
       password,
     });
@@ -86,7 +100,7 @@ export const authAPI = {
     console.log('Making profile API call to:', API_BASE_URL + '/api/auth/profile');
     console.log('Using API key:', apiKey);
 
-    const response = await api.get<any>('/api/auth/profile', {
+    const response = await api.get<ProfileResponse>('/api/auth/profile', {
       headers: {
         'X-API-Key': apiKey
       }
@@ -108,17 +122,18 @@ export const authAPI = {
 
     try {
       console.log('getCurrentUser: Making API call to /api/auth/profile');
-      const response = await api.get<any>('/api/auth/profile', {
+      const response = await api.get<ProfileResponse>('/api/auth/profile', {
         headers: {
           'X-API-Key': apiKey
         }
       });
       console.log('getCurrentUser: Response received:', response.data);
       return response.data.user;
-    } catch (error: any) {
+    } catch (error) {
       console.error('getCurrentUser: API call failed:', error);
-      console.error('getCurrentUser: Error response:', error.response?.data);
-      console.error('getCurrentUser: Error status:', error.response?.status);
+      const err = error as { response?: { data?: unknown; status?: number } };
+      console.error('getCurrentUser: Error response:', err.response?.data);
+      console.error('getCurrentUser: Error status:', err.response?.status);
       throw error;
     }
   },

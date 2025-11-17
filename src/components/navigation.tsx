@@ -4,8 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Phone, MessageSquare, Settings, LogOut, User, Key } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { Phone, MessageSquare, Settings, User, Key } from 'lucide-react';
 import { User as UserType } from '@/lib/api';
 
 interface NavigationProps {

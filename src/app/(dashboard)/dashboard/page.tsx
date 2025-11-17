@@ -47,19 +47,20 @@ export default function DashboardPage() {
 
       setAccounts(allAccounts);
       setConnectedAccounts(connected);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Dashboard: Failed to fetch data:', err);
-      console.error('Dashboard: Error response:', err.response?.data);
-      console.error('Dashboard: Error status:', err.response?.status);
+      const error = err as { response?: { data?: unknown; status?: number }; message?: string };
+      console.error('Dashboard: Error response:', error.response?.data);
+      console.error('Dashboard: Error status:', error.response?.status);
 
       // Only redirect to login for auth errors
-      if (err.response?.status === 401 || err.message?.includes('No API key')) {
+      if (error.response?.status === 401 || error.message?.includes('No API key')) {
         toast.error('Session expired. Please login again');
         localStorage.removeItem('apiKey');
         localStorage.removeItem('authToken');
         window.location.href = '/login';
       } else {
-        toast.error(err.message || 'Failed to load dashboard data');
+        toast.error(error.message || 'Failed to load dashboard data');
       }
     } finally {
       setIsLoading(false);

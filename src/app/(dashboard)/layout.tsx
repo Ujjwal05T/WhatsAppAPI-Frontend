@@ -13,19 +13,19 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(true);
+  const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
     // Check if user is authenticated
     const apiKey = localStorage.getItem('apiKey');
     if (!apiKey) {
       router.push('/login');
-    } else {
-      setIsLoading(false);
     }
+    // Use a microtask to avoid synchronous setState in effect
+    Promise.resolve().then(() => setIsChecking(false));
   }, [router]);
 
-  if (isLoading) {
+  if (isChecking) {
     return <LayoutSkeleton />;
   }
 

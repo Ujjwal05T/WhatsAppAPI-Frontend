@@ -32,7 +32,6 @@ export default function ProfilePage() {
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [apiKey, setApiKey] = useState<string>('');
   const [isCopied, setIsCopied] = useState(false);
 
   useEffect(() => {
@@ -44,7 +43,6 @@ export default function ProfilePage() {
     const storedApiKey = localStorage.getItem('apiKey');
     if (storedApiKey) {
       console.log('Found stored API key:', storedApiKey);
-      setApiKey(storedApiKey);
       fetchProfileData(storedApiKey);
     } else {
       // Try to get API key from URL params
@@ -54,7 +52,6 @@ export default function ProfilePage() {
 
       if (urlApiKey) {
         localStorage.setItem('apiKey', urlApiKey);
-        setApiKey(urlApiKey);
         fetchProfileData(urlApiKey);
       } else {
         // Check if we have an auth token that might be the API key
@@ -64,7 +61,6 @@ export default function ProfilePage() {
         if (authToken && authToken.startsWith('api_')) {
           console.log('Using auth token as API key');
           localStorage.setItem('apiKey', authToken);
-          setApiKey(authToken);
           fetchProfileData(authToken);
         } else {
           setError('API key not found. Please login first.');
@@ -80,12 +76,13 @@ export default function ProfilePage() {
       const data = await authAPI.getProfile(key);
       console.log('Profile data received:', data);
       setProfileData(data);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Failed to fetch profile:', err);
-      console.error('Error response:', err.response?.data);
-      console.error('Error status:', err.response?.status);
+      const error = err as { response?: { data?: { error?: string }; status?: number }; message?: string };
+      console.error('Error response:', error.response?.data);
+      console.error('Error status:', error.response?.status);
 
-      const errorMessage = err.response?.data?.error || err.message || 'Failed to load profile';
+      const errorMessage = error.response?.data?.error || error.message || 'Failed to load profile';
       setError(errorMessage);
     } finally {
       setIsLoading(false);
@@ -303,7 +300,7 @@ export default function ProfilePage() {
             {profileData.statistics.totalWhatsAppAccounts === 0 && (
               <div className="mt-6 text-center p-4 bg-blue-50 rounded-lg">
                 <p className="text-blue-800 mb-3">
-                  You haven't created any WhatsApp accounts yet. Get started by creating your first account!
+                  You haven&apos;t created any WhatsApp accounts yet. Get started by creating your first account!
                 </p>
                 <Button onClick={() => window.location.href = '/accounts'}>
                   Create Your First Account

@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Phone, UserPlus, ArrowLeft } from 'lucide-react';
+import { UserPlus, ArrowLeft } from 'lucide-react';
 import { authAPI } from '@/lib/api';
 import { toast } from 'sonner';
 
@@ -71,8 +71,10 @@ export default function RegisterPage() {
 
       toast.success('Registration successful! Welcome to WhatsApp API');
       router.push('/dashboard');
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.message || err.message || 'Registration failed';
+    } catch (err) {
+      const errorMessage = (err as { response?: { data?: { message?: string } }; message?: string }).response?.data?.message
+        || (err instanceof Error ? err.message : null)
+        || 'Registration failed';
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -195,7 +197,7 @@ export default function RegisterPage() {
         </Card>
 
         <div className="mt-6 text-center text-xs text-gray-500">
-          By registering, you agree to use this service responsibly and in compliance with WhatsApp's terms of service.
+          By registering, you agree to use this service responsibly and in compliance with WhatsApp&apos;s terms of service.
         </div>
       </div>
     </div>

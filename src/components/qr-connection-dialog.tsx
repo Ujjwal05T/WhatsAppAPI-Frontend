@@ -9,7 +9,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { QrCode, RefreshCw, CheckCircle, Smartphone, Clock, Copy } from 'lucide-react';
 import { toast } from 'sonner';
@@ -69,6 +68,7 @@ export function QRConnectionDialog({
       clearInterval(qrRefreshInterval);
       clearInterval(countdownInterval);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, accountToken, isConnected]);
 
   const fetchQRCode = async () => {
@@ -93,8 +93,8 @@ export function QRConnectionDialog({
       } else if (data.message) {
         setTimeout(() => fetchQRCode(), 3000);
       }
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to fetch QR code');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to fetch QR code');
     } finally {
       setIsLoading(false);
     }
@@ -140,8 +140,6 @@ export function QRConnectionDialog({
       await fetchQRCode();
       setQrExpiresIn(50);
       toast.success('QR code refreshed');
-    } catch (err) {
-      toast.error('Failed to refresh QR code');
     } finally {
       setIsRefreshing(false);
     }
@@ -239,7 +237,7 @@ export function QRConnectionDialog({
                 </li>
                 <li className="flex items-start">
                   <span className="font-medium mr-2">3.</span>
-                  <span>Tap "Link a device"</span>
+                  <span>Tap &quot;Link a device&quot;</span>
                 </li>
                 <li className="flex items-start">
                   <span className="font-medium mr-2">4.</span>

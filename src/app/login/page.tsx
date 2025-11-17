@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Phone, ArrowLeft, Lock } from 'lucide-react';
+import { ArrowLeft, Lock } from 'lucide-react';
 import { authAPI } from '@/lib/api';
 import { toast } from 'sonner';
 
@@ -54,8 +54,10 @@ export default function LoginPage() {
 
       toast.success('Login successful! Welcome back');
       router.push('/dashboard');
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.message || err.message || 'Login failed';
+    } catch (err) {
+      const errorMessage = (err as { response?: { data?: { message?: string } }; message?: string }).response?.data?.message
+        || (err instanceof Error ? err.message : null)
+        || 'Login failed';
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -137,7 +139,7 @@ export default function LoginPage() {
               </Button>
 
               <div className="text-center text-sm">
-                Don't have an account?{' '}
+                Don&apos;t have an account?{' '}
                 <Link href="/register" className="text-green-600 hover:text-green-700 font-medium">
                   Register here
                 </Link>

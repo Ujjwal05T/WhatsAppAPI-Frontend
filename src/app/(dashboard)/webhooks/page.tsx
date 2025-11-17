@@ -34,7 +34,6 @@ interface WhatsAppAccount {
 }
 
 export default function WebhooksPage() {
-  const [user, setUser] = useState<any>(null);
   const [accounts, setAccounts] = useState<WhatsAppAccount[]>([]);
   const [webhooks, setWebhooks] = useState<WebhookData[]>([]);
   const [selectedAccount, setSelectedAccount] = useState<string>('');
@@ -49,6 +48,7 @@ export default function WebhooksPage() {
 
   useEffect(() => {
     fetchUserData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchUserData = async () => {
@@ -60,7 +60,6 @@ export default function WebhooksPage() {
       }
 
       const userData = await authAPI.getCurrentUser();
-      setUser(userData);
 
       // Fetch WhatsApp accounts
       const userAccounts = await whatsappAPI.getUserAccounts(userData.id);
@@ -125,17 +124,15 @@ export default function WebhooksPage() {
       });
 
       if (response.ok) {
-        const data = await response.json();
         toast.success('Webhook registered successfully!');
         setShowRegisterDialog(false);
         setWebhookData({ url: '', secret: '', events: ['message.received'] });
         await fetchWebhooks(selectedAccount, apiKey!);
       } else {
-        const error = await response.json();
-        toast.error(error.error || 'Failed to register webhook');
+        const errorData = await response.json();
+        toast.error(errorData.error || 'Failed to register webhook');
       }
-    } catch (error) {
-      console.error('Error registering webhook:', error);
+    } catch {
       toast.error('Failed to register webhook');
     } finally {
       setIsRegistering(false);
@@ -158,7 +155,7 @@ export default function WebhooksPage() {
         toast.success(`Webhook ${isActive ? 'enabled' : 'disabled'} successfully`);
         await fetchWebhooks(selectedAccount, apiKey!);
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to update webhook');
     }
   };
@@ -177,7 +174,7 @@ export default function WebhooksPage() {
         toast.success('Webhook deleted successfully');
         await fetchWebhooks(selectedAccount, apiKey!);
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to delete webhook');
     }
   };
@@ -193,7 +190,7 @@ export default function WebhooksPage() {
       if (response.ok) {
         toast.success('Test webhook sent successfully');
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to send test webhook');
     }
   };
@@ -233,7 +230,7 @@ export default function WebhooksPage() {
           <CardHeader>
             <CardTitle className="text-lg">Select WhatsApp Account</CardTitle>
             <CardDescription>
-              Choose which WhatsApp account's webhooks to manage
+              Choose which WhatsApp account&apos;s webhooks to manage
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -511,7 +508,7 @@ export default function WebhooksPage() {
             <div className="flex items-start gap-3">
               <span className="text-green-600 mt-1">3.</span>
               <div>
-                <strong>Test it</strong> using the Test button - you'll receive a test message
+                <strong>Test it</strong> using the Test button - you&apos;ll receive a test message
               </div>
             </div>
             <div className="flex items-start gap-3">
