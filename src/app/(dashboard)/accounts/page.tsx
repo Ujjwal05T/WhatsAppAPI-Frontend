@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Shield, Plus, Phone, QrCode, RefreshCw, Copy, Trash2, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Shield, Plus, Phone, QrCode, RefreshCw, Copy, Trash2, CheckCircle, XCircle, AlertCircle, Link2 } from 'lucide-react';
 import { AccountsSkeleton } from '@/components/skeletons/dashboard-skeleton';
 import { toast } from 'sonner';
 import { copyToClipboard as copyText } from '@/lib/utils';
@@ -57,6 +57,7 @@ export default function AccountsPage() {
   const [apiKey, setApiKey] = useState<string>('');
   const [deletingAccountToken, setDeletingAccountToken] = useState<string | null>(null);
   const [checkingStatus, setCheckingStatus] = useState<string | null>(null);
+  const [relinkingAccountToken, setRelinkingAccountToken] = useState<string | null>(null);
 
   useEffect(() => {
     fetchUserData();
@@ -249,6 +250,39 @@ export default function AccountsPage() {
     }
   };
 
+  const relinkAccount = async (accountToken: string) => {
+    setRelinkingAccountToken(accountToken);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/whatsapp/relink/${accountToken}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': apiKey
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        toast.success('Relink initiated!', {
+          description: 'Redirecting to QR code scanner...'
+        });
+        setTimeout(() => {
+          window.location.href = `/relink/${accountToken}`;
+        }, 1000);
+      } else {
+        const data = await response.json();
+        toast.error('Failed to initiate relink', {
+          description: data.error || 'Unknown error'
+        });
+      }
+    } catch (err) {
+      console.error('Failed to relink account:', err);
+      toast.error('Failed to relink account');
+    } finally {
+      setRelinkingAccountToken(null);
+    }
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString('en-US', {
       year: 'numeric',
@@ -431,16 +465,32 @@ export default function AccountsPage() {
 
                       {/* Action Buttons */}
                       <div className="flex gap-2 pt-2">
-                        {!account.isConnected && (
-                          <Button
-                            size="sm"
-                            className="flex-1"
-                            onClick={() => window.location.href = `/connect/${account.accountToken}`}
-                          >
-                            <QrCode className="h-3 w-3 mr-1" />
-                            Connect
-                          </Button>
-                        )}
+                        {!account.isConnected ? (
+                          <>
+                            {account.phoneNumber ? (
+                              // If account was previously connected (has phone number), show Relink
+                              <Button
+                                size="sm"
+                                className="flex-1"
+                                onClick={() => relinkAccount(account.accountToken)}
+                                disabled={relinkingAccountToken === account.accountToken}
+                              >
+                                <Link2 className="h-3 w-3 mr-1" />
+                                {relinkingAccountToken === account.accountToken ? 'Relinking...' : 'Relink'}
+                              </Button>
+                            ) : (
+                              // If account was never connected, show Connect
+                              <Button
+                                size="sm"
+                                className="flex-1"
+                                onClick={() => window.location.href = `/connect/${account.accountToken}`}
+                              >
+                                <QrCode className="h-3 w-3 mr-1" />
+                                Connect
+                              </Button>
+                            )}
+                          </>
+                        ) : null}
                         <Button
                           size="sm"
                           variant="outline"

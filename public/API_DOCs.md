@@ -581,6 +581,55 @@ X-API-Key: your_api_key
 }
 ```
 
+## Media Endpoints
+
+### GET /api/media/:messageId
+Download media file from a WhatsApp message.
+
+**Access:** Public (message ID acts as authorization)
+
+**Note:** Media files are stored for 24 hours after receiving
+
+**Response (200):**
+Returns the media file with appropriate Content-Type headers.
+
+**Headers:**
+- `Content-Type`: The media MIME type (e.g., `image/jpeg`, `video/mp4`)
+- `Content-Disposition`: Suggested filename for download
+- `Content-Length`: File size in bytes
+
+**Response (404):**
+```json
+{
+  "success": false,
+  "error": "Media not found or expired. Media is only available for 24 hours."
+}
+```
+
+**Example:**
+```bash
+curl -O http://103.150.136.76:8090/api/media/3EB0ABC123456789
+```
+
+### GET /api/media-stats
+Get media service statistics.
+
+**Headers:**
+```
+X-API-Key: your_api_key
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "stats": {
+    "storedMessages": 42,
+    "ttl": "24 hours"
+  }
+}
+```
+
 ## Utility Endpoints
 
 ### GET /api/health
@@ -599,6 +648,8 @@ Health check endpoint.
     "whatsappIntegration": true,
     "messageTemplates": true,
     "mediaMessages": true,
+    "webhooks": true,
+    "mediaDownload": true,
     "rateLimiting": true,
     "databaseStorage": true
   }
@@ -633,6 +684,17 @@ API documentation endpoint.
       "DELETE /api/templates/:name": "Delete message template",
       "GET /api/account/:token/status": "Check account status",
       "GET /api/account/:token/messages": "Get message history"
+    },
+    "webhooks": {
+      "POST /api/webhooks/register": "Register webhook for incoming messages",
+      "GET /api/webhooks/:accountToken": "Get all webhooks for account",
+      "PATCH /api/webhooks/:id": "Update webhook",
+      "DELETE /api/webhooks/:id": "Delete webhook",
+      "POST /api/webhooks/:id/test": "Test webhook"
+    },
+    "media": {
+      "GET /api/media/:messageId": "Download media file from message (24h expiry)",
+      "GET /api/media-stats": "Get media service statistics"
     },
     "utilities": {
       "GET /api/health": "Health check",
@@ -772,7 +834,7 @@ All endpoints return consistent error responses:
 
 When webhooks are triggered, the payload structure is:
 
-### Message Received Webhook
+### Text Message Webhook
 ```json
 {
   "event": "message.received",
@@ -788,6 +850,108 @@ When webhooks are triggered, the payload structure is:
   }
 }
 ```
+
+### Image Message Webhook
+```json
+{
+  "event": "message.received",
+  "timestamp": "2024-01-01T00:00:00.000Z",
+  "accountToken": "acc_abc123...",
+  "message": {
+    "id": "3EB0ABC123456789",
+    "from": "+1234567890",
+    "fromName": "Jane Smith",
+    "body": "Check out this product!",
+    "timestamp": "2024-01-01T00:00:00.000Z",
+    "type": "image",
+    "media": {
+      "mimetype": "image/jpeg",
+      "filename": null,
+      "fileSize": 45678,
+      "caption": "Check out this product!",
+      "url": "http://103.150.136.76:8090/api/media/3EB0ABC123456789"
+    }
+  }
+}
+```
+
+### Video Message Webhook
+```json
+{
+  "event": "message.received",
+  "timestamp": "2024-01-01T00:00:00.000Z",
+  "accountToken": "acc_abc123...",
+  "message": {
+    "id": "3EB0DEF987654321",
+    "from": "+1234567890",
+    "fromName": "Mike Johnson",
+    "body": "Product demo video",
+    "timestamp": "2024-01-01T00:00:00.000Z",
+    "type": "video",
+    "media": {
+      "mimetype": "video/mp4",
+      "filename": "demo.mp4",
+      "fileSize": 1234567,
+      "caption": "Product demo video",
+      "url": "http://103.150.136.76:8090/api/media/3EB0DEF987654321"
+    }
+  }
+}
+```
+
+### Document Message Webhook
+```json
+{
+  "event": "message.received",
+  "timestamp": "2024-01-01T00:00:00.000Z",
+  "accountToken": "acc_abc123...",
+  "message": {
+    "id": "3EB0JKL789456123",
+    "from": "+1234567890",
+    "fromName": "Sarah Williams",
+    "body": "Please review this contract",
+    "timestamp": "2024-01-01T00:00:00.000Z",
+    "type": "document",
+    "media": {
+      "mimetype": "application/pdf",
+      "filename": "contract.pdf",
+      "fileSize": 567890,
+      "caption": "Please review this contract",
+      "url": "http://103.150.136.76:8090/api/media/3EB0JKL789456123"
+    }
+  }
+}
+```
+
+### Audio Message Webhook
+```json
+{
+  "event": "message.received",
+  "timestamp": "2024-01-01T00:00:00.000Z",
+  "accountToken": "acc_abc123...",
+  "message": {
+    "id": "3EB0GHI456789123",
+    "from": "+1234567890",
+    "fromName": "Tom Brown",
+    "body": "[Media message]",
+    "timestamp": "2024-01-01T00:00:00.000Z",
+    "type": "audio",
+    "media": {
+      "mimetype": "audio/ogg; codecs=opus",
+      "filename": null,
+      "fileSize": 23456,
+      "caption": null,
+      "url": "http://103.150.136.76:8090/api/media/3EB0GHI456789123"
+    }
+  }
+}
+```
+
+**Notes:**
+- Media files are available for **24 hours** after receiving
+- Use the `media.url` to download the actual file
+- The `message.body` contains the caption for media with captions, or "[Media message]" otherwise
+- Download media immediately if you need to keep it longer than 24 hours
 
 ## SDKs and Libraries
 
@@ -867,6 +1031,132 @@ def send_media(to, file_path, caption):
     return response.json()
 ```
 
+### Webhook Handler with Media Support (Node.js/Express)
+```javascript
+const express = require('express');
+const axios = require('axios');
+const fs = require('fs');
+
+const app = express();
+app.use(express.json());
+
+// Webhook endpoint
+app.post('/webhook', async (req, res) => {
+  const { event, message, accountToken } = req.body;
+
+  // Respond quickly
+  res.status(200).json({ success: true });
+
+  // Process webhook asynchronously
+  try {
+    console.log(`Received ${event} from ${message.fromName}: ${message.body}`);
+
+    // Handle media messages
+    if (message.media) {
+      console.log(`Media type: ${message.type}`);
+      console.log(`Filename: ${message.media.filename || 'N/A'}`);
+      console.log(`Size: ${message.media.fileSize} bytes`);
+
+      // Download the media file
+      const response = await axios.get(message.media.url, {
+        responseType: 'arraybuffer'
+      });
+
+      // Save to disk
+      const filename = message.media.filename || `${message.id}.${message.type}`;
+      fs.writeFileSync(`./downloads/${filename}`, response.data);
+      console.log(`Media saved to: ./downloads/${filename}`);
+
+      // Process based on media type
+      if (message.type === 'image') {
+        console.log('Processing image...');
+        // Your image processing logic here
+      } else if (message.type === 'document') {
+        console.log('Processing document...');
+        // Your document processing logic here
+      }
+    } else {
+      // Handle text message
+      console.log('Text message:', message.body);
+    }
+  } catch (error) {
+    console.error('Error processing webhook:', error);
+  }
+});
+
+app.listen(3000, () => {
+  console.log('Webhook server running on port 3000');
+});
+```
+
+### Webhook Handler with Media Support (Python/Flask)
+```python
+from flask import Flask, request, jsonify
+import requests
+import os
+
+app = Flask(__name__)
+
+def download_media(media_url, message_id, filename=None):
+    """Download media file from webhook URL"""
+    response = requests.get(media_url)
+    if response.status_code == 200:
+        if not filename:
+            filename = f"{message_id}.jpg"
+
+        filepath = f'./downloads/{filename}'
+        with open(filepath, 'wb') as f:
+            f.write(response.content)
+        return filepath
+    return None
+
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    payload = request.json
+    message = payload['message']
+
+    # Respond quickly
+    response = jsonify({'success': True})
+
+    # Process webhook
+    print(f"Received message from {message['fromName']}: {message['body']}")
+
+    # Handle media
+    if 'media' in message:
+        media = message['media']
+        print(f"Media type: {message['type']}")
+        print(f"Filename: {media.get('filename', 'N/A')}")
+        print(f"Size: {media.get('fileSize')} bytes")
+
+        # Download media
+        filepath = download_media(
+            media['url'],
+            message['id'],
+            media.get('filename')
+        )
+
+        if filepath:
+            print(f"Media saved to: {filepath}")
+
+            # Process media based on type
+            if message['type'] == 'image':
+                print('Processing image...')
+                # Your image processing logic here
+            elif message['type'] == 'document':
+                print('Processing document...')
+                # Your document processing logic here
+    else:
+        # Handle text message
+        print(f"Text message: {message['body']}")
+
+    return response
+
+if __name__ == '__main__':
+    # Create downloads directory if it doesn't exist
+    os.makedirs('./downloads', exist_ok=True)
+    app.run(port=3000)
+```
+
 ## Environment Variables
 
 ### Backend (.env)
@@ -877,6 +1167,7 @@ DATABASE_URL="postgresql://user:password@localhost:5432/whatsapp"
 # Server
 PORT=5000
 NODE_ENV=production
+API_BASE_URL=http://103.150.136.76:8090
 
 # CORS
 FRONTEND_URL=https://your-frontend.com,https://www.your-frontend.com
@@ -913,6 +1204,8 @@ NEXT_PUBLIC_API_URL=https://your-backend-domain.com
 3. **"Rate limit exceeded"**: Wait for the rate limit window to reset
 4. **"Message sending failed"**: Check phone number format and WhatsApp account status
 5. **"Webhook not working"**: Verify webhook URL is accessible and supports POST requests
+6. **"Media not found or expired"**: Media files expire after 24 hours - download immediately
+7. **"Cannot download media"**: Check that the message ID is correct and media hasn't expired
 
 ### Debugging Tips
 
@@ -923,6 +1216,15 @@ NEXT_PUBLIC_API_URL=https://your-backend-domain.com
 
 ---
 
+## Additional Documentation
+
+For detailed information about specific features, see:
+
+- **[Media Webhooks Documentation](./MEDIA_WEBHOOKS.md)** - Complete guide for handling media messages in webhooks
+- **[Webhooks Documentation](./WEBHOOKS.md)** - Comprehensive webhook implementation guide with examples
+
+---
+
 ## Support
 
 For support and questions:
@@ -930,6 +1232,7 @@ For support and questions:
 - Review error messages for specific issues
 - Test endpoints individually before integration
 - Monitor logs for detailed error information
+- See additional documentation links above for detailed guides
 
-**Version**: 2.0.0
-**Last Updated**: 2024-01-01
+**Version**: 2.1.0 (Media Support Added)
+**Last Updated**: 2025-01-20
