@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 
 export default function RegisterPage() {
   const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [mobile, setMobile] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -22,13 +23,18 @@ export default function RegisterPage() {
   const router = useRouter();
 
   const validateForm = () => {
-    if (!name || !mobile || !password || !confirmPassword) {
+    if (!name || !email || !mobile || !password || !confirmPassword) {
       setError('All fields are required');
       return false;
     }
 
     if (name.trim().length < 2) {
       setError('Name must be at least 2 characters long');
+      return false;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setError('Please enter a valid email address');
       return false;
     }
 
@@ -61,7 +67,7 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      const response = await authAPI.register(name, mobile, password);
+      const response = await authAPI.register(name, email, mobile, password);
 
       // Store the API key for profile access
       localStorage.setItem('apiKey', response.user.apiKey);
@@ -130,6 +136,22 @@ export default function RegisterPage() {
                 />
                 <p className="text-xs text-gray-500">
                   Enter your full name
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email">Email Address</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="john@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  disabled={isLoading}
+                />
+                <p className="text-xs text-gray-500">
+                  Enter a valid email address
                 </p>
               </div>
 

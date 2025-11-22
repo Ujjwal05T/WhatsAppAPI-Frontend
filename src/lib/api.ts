@@ -35,6 +35,7 @@ api.interceptors.response.use(
 export interface User {
   id: number;
   name: string;
+  email: string | null;
   mobile: string;
   apiKey: string;
   role: string;
@@ -79,9 +80,10 @@ export interface WhatsAppAccountResponse {
 
 // Auth APIs
 export const authAPI = {
-  register: async (name: string, mobile: string, password: string) => {
+  register: async (name: string, email: string, mobile: string, password: string) => {
     const response = await api.post<RegisterResponse>('/api/auth/register', {
       name,
+      email,
       mobile,
       password,
     });
